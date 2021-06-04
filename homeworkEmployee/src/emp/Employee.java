@@ -2,6 +2,7 @@ package emp;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.TreeMap;
 import java.lang.*;
 public abstract class Employee implements Comparable<Employee>{
 	public Employee(){
@@ -48,6 +49,7 @@ public abstract class Employee implements Comparable<Employee>{
 			return 0;
 	}
 }
+
 class SalaridEmployee extends Employee{
 	public SalaridEmployee(){}//构造函数
 	double weeklySalary;//周薪
@@ -123,5 +125,26 @@ class basePlusCommisionEmployee extends CommisionEmployee{
 	}//getter和setter
 	//toString
 }
-
+class EmployeeException extends Exception{
+	public String code;
+	public String message;
+}
+class factory{
+	private TreeMap employees;
+	Employee getEmployee(String empSecNum) {
+		
+	}
+	Employee deleteEmployee(String empSecNum) {
+		
+	}
+	Employee addEmployee(Employee emp) {
+		
+	}
+	Employee updateEmployee(String empSecNum,Employee emp) {
+		
+	}
+	void printEmployees() {
+		
+	}
+}
 
