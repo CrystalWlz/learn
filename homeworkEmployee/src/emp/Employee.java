@@ -1,19 +1,17 @@
 package emp;
 import java.io.*;
-import java.util.Arrays;
-import java.util.Scanner;
-import java.util.TreeMap;
+import java.util.*;
 import java.lang.*;
-public abstract class Employee implements Comparable<Employee>{
+abstract class Employee implements Comparable<Employee>{
 	public Employee(){
 		firstName="Tom";
 		lastName="Tom";
 		socialSecurityNumber="000000";
 	}//构造函数
 	
-	String firstName;
-	String lastName;
-	String socialSecurityNumber;
+	private String firstName;
+	private String lastName;
+	private String socialSecurityNumber;
 	//参数
 	
 	public abstract double earning();//抽象方法
@@ -28,13 +26,17 @@ public abstract class Employee implements Comparable<Employee>{
 		return socialSecurityNumber;
 	}
 	public void setfirstName(String s) {
-		firstName=s;
+		this.firstName=s;
 	}
 	public void setlastName(String s) {
-		lastName=s;
-	}//getter和setter
+		this.lastName=s;
+	}
+	public void setsocialSecurityNumber(String s) {
+		this.socialSecurityNumber=s;
+	}
+	//getter和setter
 	public String toString() {
-		return "firstName:"+firstName+"; lastName:"+lastName+"; socialSecurityNumber:"+socialSecurityNumber;
+		return "firstName:"+getfirstName()+"; lastName:"+getlastName()+"; socialSecurityNumber:"+getsocialSecurityNumber()+"; earning:"+String.format("%.2f", earning());
 	}//toString
 	public int compareTo(Employee o) {
 			if(earning()<o.earning()) {
@@ -52,15 +54,15 @@ public abstract class Employee implements Comparable<Employee>{
 
 class SalaridEmployee extends Employee{
 	public SalaridEmployee(){}//构造函数
-	double weeklySalary;//周薪
+	private double weeklySalary;//周薪
 	public double earning(){
-		return weeklySalary*4;
+		return getweeklySalary()*4;
 	}//重载
 	public double getweeklySalary() {
 		return weeklySalary;
 	}
 	public void setweeklySalary(double s) {
-		weeklySalary=s;
+		this.weeklySalary=s;
 	}//getter和setter
 	//toString
 }
@@ -68,83 +70,112 @@ class SalaridEmployee extends Employee{
 
 class HourlyEmployee extends Employee{
 	public HourlyEmployee(){}//构造函数
-	double wage;//时薪
-	double hours;//月工时
+	private double wage;//时薪
+	private double hours;//月工时
 	public double earning() {
-		return wage*hours;
+		return getwage()*gethours();
 	}//重载
 	public double getwage() {
 		return wage;
 	}
 	public void setwage(double s) {
-		wage=s;
+		this.wage=s;
 	}
 	public double gethours() {
 		return hours;
 	}
 	public void sethours(double s) {
-		hours=s;
+		this.hours=s;
 	}//getter和setter
 	
-	//toString
 }
 
 class CommisionEmployee extends Employee{
 	public CommisionEmployee(){}
-	double grossSales;//销售额
-	double commissionRate;//提成比率
+	private double grossSales;//销售额
+	private double commissionRate;//提成比率
 	public double earning() {
-		return grossSales*commissionRate;
+		return getgrossSales()*getcommissionRate();
 	}//重载
 	public double getgrossSales() {
 		return grossSales;
 	}
 	public void setgrossSales(double s) {
-		grossSales=s;
+		this.grossSales=s;
 	}
 	public double getcommissionRate() {
 		return commissionRate;
 	}
 	public void setcommissionRate(double s) {
-		commissionRate=s;
+		this.commissionRate=s;
 	}//getter和setter
 	//toString
 }
 
 class basePlusCommisionEmployee extends CommisionEmployee{
 	public basePlusCommisionEmployee(){}
-	double baseSalary;//月基本工资
+	private double baseSalary;//月基本工资
 	public double earning() {
-		return grossSales*commissionRate+baseSalary;
+		return getgrossSales()*getcommissionRate()+getbaseSalary();
 	}
 	public double getbaseSalary() {
 		return baseSalary;
 	}
 	public void setbaseSalary(double s) {
-		baseSalary=s;
+		this.baseSalary=s;
 	}//getter和setter
 	//toString
 }
 class EmployeeException extends Exception{
 	public String code;
 	public String message;
+	public EmployeeException(String c,String m){
+		this.code=c;
+		this.message=m;
+	}
+	public void printshit() {
+		System.out.println(code);
+		System.out.println(message);
+	}
 }
 class factory{
-	private TreeMap employees;
-	Employee getEmployee(String empSecNum) {
-		
+	private TreeMap<String,Employee> employees=new TreeMap<>();
+	Employee getEmployee(String empSecNum) throws EmployeeException{
+		if(employees.containsKey(empSecNum)) {
+			return employees.get(empSecNum);
+		}else {
+			throw new EmployeeException("1004","employee not found.");
+		}
 	}
-	Employee deleteEmployee(String empSecNum) {
-		
+	Employee deleteEmployee(String empSecNum)throws EmployeeException {
+		if(employees.containsKey(empSecNum)) {
+			Employee e=employees.get(empSecNum);
+			employees.remove(empSecNum);
+			return e;
+		}else {
+			throw new EmployeeException("1002","employee not found.");
+		}
 	}
-	Employee addEmployee(Employee emp) {
-		
+	Employee addEmployee(Employee emp) throws EmployeeException{
+		if(!employees.containsKey(emp.getsocialSecurityNumber())) {
+			employees.put(emp.getsocialSecurityNumber(), emp);
+			return emp;
+		}else {
+			throw new EmployeeException("1001","employee exists.");
+		}
 	}
-	Employee updateEmployee(String empSecNum,Employee emp) {
-		
+	Employee updateEmployee(String empSecNum,Employee emp)throws EmployeeException {
+		if(employees.containsKey(empSecNum)) {
+			employees.replace(empSecNum, emp);
+			return emp;
+		}else {
+			throw new EmployeeException("1003","employee not found.");
+		}
 	}
 	void printEmployees() {
-		
+		Collection<Employee> values=employees.values();
+		for(Employee e : values) {
+			System.out.println(e.toString());
+		}
 	}
 }
-
