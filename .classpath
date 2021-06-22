@@ -6,5 +6,6 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="EmployeeGUI/src/empGUI/Employee.java"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
