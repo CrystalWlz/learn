@@ -1,8 +1,3 @@
-;--------------------------------------------------------------------------
-; Author: SimonKenneth                                                    ;
-; Date  : 2020/11/14                                                      ;
-; ID    : 2018211739                                                      ;
-;--------------------------------------------------------------------------
 
 DATA SEGMENT
     ;--------------------显示菜单--------------------
@@ -16,7 +11,7 @@ DATA SEGMENT
     TIPS6 DB     7CH," X-Music!             ",7CH,'$'    
     TIPS7 DB     19H," Q-Quit This Program  ",19H,'$'
     LINE_BREAK DB 0AH,0DH,'$'
-    authorInfo DB "Copyright(C) n",'$'
+    authorInfo DB "Copyright(C)",'$'
     colorIndex DB 0F8H
     colorHigh DB 00H
     colorLow DB 09H
@@ -33,17 +28,17 @@ DATA SEGMENT
     TIMER_NAME DB "TIMER",'$'
     showDate_Flag DB 0
     ;--------------------显示图片所需变量--------------------
-    bmpfname db '1.bmp',0       ; 图片路径  
+    bmpfname db 'violet.bmp',0       ; 图片路径  
     backGround db 'bg.bmp',0
     xp DB 'xpbg.bmp',0
-    powerOn DB 'open.bmp',0
+    OP DB 'op.bmp',0
     x0 dw 0  	                ; 当前显示界面的横坐标，初始为0
     y0 dw 0            	        ; 当前显示界面的纵坐标，初始为0
-    handle dw ?                 ; 文件指针  
-    bmpdata1 db 256*4 dup(?)    ; 存放位图文件调色板  
+    handle dw 0                 ; 文件指针  
+    bmpdata1 db 256*4 dup(0)    ; 存放位图文件调色板  
     bmpdata2 db 61000 dup(0)    ; 存放位图信息,64k  
-    bmpwidth dw ?               ; 位图宽度  
-    bmplength dw ?              ; 位图长度 
+    bmpwidth dw 0               ; 位图宽度  
+    bmplength dw 0              ; 位图长度 
     ;--------------------8253中断定时器所需变量--------------------
     count100 DB 0               ; 分频系数
     fre100 DB 0                 ; 100hz
@@ -60,8 +55,8 @@ DATA SEGMENT
     timerStop_Flag db 0
     ;--------------------绘制图形所需变量--------------------
     gameMode db 0
-    sandX DW 160
-    sandY DW 150
+    starX DW 160
+    starY DW 150
     rec1X DW 118
     rec1Y DW 175
     temp1 DW 0
@@ -78,18 +73,19 @@ DATA SEGMENT
          db 0,0,0,1,1,1,1,0,0,0
     ;--------------------播放音乐所需变量-------------------- 
     ;频率表
-    musFreq dw 392,294,330,196,392,294,-1
+    musFreq dw 196,220,262,294,330,370,391,440,494,-1
     ;节拍表
     musTime dw 40,20,20,70,30,100
     mayDAY_musFreq dw -1
     playing DB "Playing...",'$'
-    musInfo DB "<Dao Xiang> -- Jay Chou",'$'
+    musicInfo DB "献给薇尔莉特",'$'            ;标题
     jayChou DB "Jay Chou",'$'
-    daoXiangFreq DW 330,349,392,1,392,1,392,1,392,1,392,1,392,1,392,1,392,1,294,330,294,262,1
-                 DW 262,294,330,1,330,1,330,1,330,1,330,1,330,1,294,330,262,220,1
-                 DW 220,262,1,262,1,262,1,262,1,294,1,294,1,294,262,1,262,1,262,-1
+    sincerelyFreq DW 196,330,294,330,1,370,330,294,1,196,330,294,330,1,294,330,370,370,1;6323,4322,6323,2344
+                 DW 196,294,330,370,1,294,294,1,196,294,196,294,330,370,1;62343,22,626234
+                 DW 196,330,294,330,1,370,330,294,1,196,330,294,330,1,440,330,294,294,1;6323,4322,6323,6322
+                 DW 196,294,330,370,391,440,1,370,330,294,-1;623456,432
 
-    daoXiangTime DW 40, 30, 50, 2,20, 2, 20,4 ,30,5,50, 2,20, 2,20, 2,20, 2, 20, 20, 20, 20,5
+    sincerelyTime DW 40, 30, 50, 2,20, 2, 20,4 ,30,5,50, 2,20, 2,20, 2,20, 2, 20, 20, 20, 20,5
                  DW 40, 20, 20, 2,20, 4, 40,2, 25,2,25, 2,20, 2, 20, 20, 20, 20,5
                  DW 40, 15, 2, 30,2, 25,2,25, 2,35, 2,35, 2, 35,20, 2,35, 2,100
 DATA ENDS
@@ -503,12 +499,12 @@ START:
 ;                                         >>>主过程<<<                                          |
 ;===============================================================================================
 BEGIN:         
-        LEA DX,powerOn
-        CALL OPEN_PHOTO                 ;从硬盘读取图片 
+        LEA DX,OP
+        CALL OPEN_PHOTO                 ;读取第一张图片 
         CALL READ_PHOTO
         CALL SET_COLOR 
         CALL SHOW_IMG  
-        MUS_ADDRESS musFreq, musTime    ;播放开机音乐
+        MUS_ADDRESS musFreq, musTime    ;播放OP
         CALL music                
 
         CALL CLR_TIMER_STR
@@ -524,9 +520,9 @@ BEGIN:
 MAIN_LOOP:         
         MOV AH,01H                      ;键盘输入,不等待
         INT 16H     
-        JNZ SCAN_BUTTON
+        JNZ SCAN_BUTTON                 ;判断输入
 
-        CMP gameMode,1
+        CMP gameMode,1                  ;画加载条
         JE gameLoop
         SHOW_STR CLK_NAME,9,14
         SHOW_COLOR_CHAR 1AH,9,17,7FH,1  
@@ -548,16 +544,13 @@ MAIN_LOOP:
                 CALL UPDATE_TIMER_STR
                 JMP MAIN_LOOP
         SEC_PASSED:      
-                MOV AX,sandY
-                CMP AX,183
-                JAE CHANGE_COLOR_STEP
                 MOV AL,timerStop_Flag
                 CMP AL,1
                 JE CHANGE_COLOR_STEP
-                SAND_FALL:
-                        ADD sandY,2
-                        DRAW_CIRCLE 160,sandY,1,27H
-                CHANGE_COLOR_STEP:
+                STAR_FALL:
+                        ADD starY,2
+                        DRAW_CIRCLE 160,starY,1,27H
+                CHANGE_COLOR_STEP:      ;改变颜色
                         INC colorIndex
                         CMP colorIndex,0FEH
                         JBE CHANGE_COLOR
@@ -566,10 +559,10 @@ MAIN_LOOP:
                 CHANGE_COLOR:
                         SHOW_COLOR_CHAR '-',1,8,colorIndex,24
                         SHOW_COLOR_CHAR '-',7,8,colorIndex,24
-                MOV secUpdate,0
+                MOV secUpdate,0         ;时间复位
                 CALL GET_TIME_FROM_CLK
                 JMP MAIN_LOOP
-        gameLoop:
+        gameLoop:                       ;加载条
                 ; CALL SHOW_IMG
                 MOV AL,fre1000
                 CMP AL,1
@@ -579,7 +572,7 @@ MAIN_LOOP:
                         SHOW_COLOR_CHAR 0EH,10,15,0B7H,1
                         SHOW_STR playing,10,16
                         SHOW_COLOR_CHAR 0EH,10,26,0B7H,1
-                        SHOW_STR musInfo,12,10
+                        SHOW_STR musInfo,12,10          ;标题
 
                 JMP MAIN_LOOP
         SCAN_BUTTON:
@@ -591,14 +584,6 @@ MAIN_LOOP:
                 JE PRESS_D
                 CMP AL,'q'
                 JE PRESS_Q
-                CMP AX,4b00h            ;左方向键
-                JE PRESS_LEFT
-                CMP AX,4D00H            ;右方向键
-                JE PRESS_RIGHT
-                CMP AX,4800H            ;上方向键
-                JE PRESS_UP
-                CMP AX,5000H            ;下方向键
-                JE PRESS_DOWN
                 CMP AL,'c'
                 JE PRESS_C
                 CMP AL,'s'
@@ -607,6 +592,15 @@ MAIN_LOOP:
                 JE PRESS_R
                 CMP AL,'x'
                 JE PRESS_X
+                CMP AX,4b00h            ;左方向键
+                JE PRESS_LEFT
+                CMP AX,4D00H            ;右方向键
+                JE PRESS_RIGHT
+                CMP AX,4800H            ;上方向键
+                JE PRESS_UP
+                CMP AX,5000H            ;下方向键
+                JE PRESS_DOWN
+                
                 JMP MAIN_LOOP
 
                 PRESS_UP:
@@ -644,8 +638,8 @@ MAIN_LOOP:
                 PRESS_T:
                         JMP MAIN_LOOP
                 PRESS_C:
-                        CALL DRAW_SAND_GLASS
-                        CALL DRAW_SAND
+                        CALL DRAW_star_GLASS
+                        CALL DRAW_star
                         MOV timerStart_Flag,1
                         MOV timerStop_Flag,0
                         CALL TIMER_INIT          ;定时器初始化
@@ -659,9 +653,9 @@ MAIN_LOOP:
                         CALL CLR_TIMER
                         CALL SHOW_IMG
                         CALL SHOW_TIPS
-                        CALL DRAW_SAND_GLASS
-                        CALL DRAW_SAND
-                        MOV sandY,150
+                        CALL DRAW_star_GLASS
+                        CALL DRAW_star
+                        MOV starY,150
                         SHOW_STR TIMER_NAME,11,12
                         SHOW_COLOR_CHAR 1AH,11,17,27H,1
                         SHOW_STR timerStr,11,18 
@@ -675,7 +669,7 @@ MAIN_LOOP:
                         SHOW_STR playing,10,16
                         SHOW_COLOR_CHAR 0EH,10,26,0B7H,1
                         SHOW_STR musInfo,12,10
-                        MUS_ADDRESS daoXiangFreq, daoXiangTime    ;播放稻香
+                        MUS_ADDRESS sincerelyFreq, sincerelyTime    ;播放sincerely
                         CALL music
                         MOV gameMode,1
                         JMP MAIN_LOOP
@@ -1310,32 +1304,34 @@ DISP_CHAR PROC
         RET
 DISP_CHAR ENDP
 
-; -----------DRAW_SAND-----------
-; 子程序名：DRAW_SAND
+; -----------DRAW_star-----------
+; 子程序名：DRAW_star
 ; 功能: 画沙漏里的沙子
-DRAW_SAND PROC
-        DRAW_CIRCLE 153,150,1,27H
-        DRAW_CIRCLE 157,152,1,27H
-        DRAW_CIRCLE 160,149,1,27H
-        DRAW_CIRCLE 162,152,1,27H
-        DRAW_CIRCLE 158,153,1,27H
-        DRAW_CIRCLE 164,150,1,27H
+DRAW_star PROC
+         ADD starY,2
+        DRAW_CIRCLE 160,starY,1,27H
+        INC colorIndex          ;CHANGE_COLOR_STEP:
+        CMP colorIndex,0FEH
+        JBE CHANGE_COLOR
+        MOV colorIndex,0F8H     ;RESET_COLOR_INDEX:
+        SHOW_COLOR_CHAR '-',1,8,colorIndex,24
+        SHOW_COLOR_CHAR '-',7,8,colorIndex,24
         RET
-DRAW_SAND ENDP
+DRAW_star ENDP
 
-; -----------DRAW_SAND_GLASS-----------
-; 子程序名：DRAW_SAND_GLASS
+; -----------DRAW_star_GLASS-----------
+; 子程序名：DRAW_star_GLASS
 ; 功能: 画沙漏
-DRAW_SAND_GLASS PROC
+DRAW_star_GLASS PROC
         DRAW_HLINE_THICK 130,190,125,0D8H,2
         DRAW_SLANT_LINE 130,125,157,155,0D8H
         DRAW_SLANT_LINE 163,156,190,125,0D8H
         DRAW_SLANT_LINE 157,155,130,183,0D8H
         DRAW_SLANT_LINE 163,155,190,183,0D8H
         DRAW_HLINE_THICK 130,190,183,0D8H,2
-        CALL DRAW_SAND
+        CALL DRAW_star
         RET
-DRAW_SAND_GLASS ENDP
+DRAW_star_GLASS ENDP
 
 ; -----------WAITF-----------
 ; 子程序名：WAITF
@@ -1360,7 +1356,7 @@ music proc near
      xor ax, ax
 freg:
      mov di, [si]       ;di为频率
-     cmp di, 0FFFFH
+     cmp di, 0FFFFH     ;若为-1则停止播放
      je end_mus
      mov bx, ds:[bp]    ;bx为节拍
      call GEN_SOUND
