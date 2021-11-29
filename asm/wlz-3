@@ -1,17 +1,16 @@
 
 DATA SEGMENT
     ;--------------------显示菜单--------------------
-    EQUAL_STR DB "========================",'$'
     MENU_TIP DB "Press an alphabet to select a function",'$'
-    TIPS1 DB     18H," T-Show Time          ",18H,'$'
-    TIPS2 DB     18H," D-Show Date          ",18H,'$'
-    TIPS3 DB     7CH," C-Start The Timer    ",7CH,'$'
-    TIPS4 DB     7CH," S-Stop The Timer     ",7CH,'$'
-    TIPS5 DB     7CH," R-Restart The Timer  ",7CH,'$'
-    TIPS6 DB     7CH," X-Music!             ",7CH,'$'    
-    TIPS7 DB     19H," Q-Quit This Program  ",19H,'$'
+    TIPS1 DB     18H," Date:D          ",18H,'$'
+    TIPS2 DB     18H," Time:T          ",18H,'$'
+    TIPS3 DB     7CH," Start The Timer:C    ",7CH,'$'
+    TIPS4 DB     7CH," Stop The Timer:S     ",7CH,'$'
+    TIPS5 DB     7CH," Restart The Timer:R  ",7CH,'$'
+    TIPS6 DB     7CH," Play The ED:E        ",7CH,'$'    
+    TIPS7 DB     19H," Quit This Program:Q  ",19H,'$'
     LINE_BREAK DB 0AH,0DH,'$'
-    authorInfo DB "Copyright(C)",'$'
+    Info DB "Never know what love means.",'$'
     colorIndex DB 0F8H
     colorHigh DB 00H
     colorLow DB 09H
@@ -29,8 +28,7 @@ DATA SEGMENT
     showDate_Flag DB 0
     ;--------------------显示图片所需变量--------------------
     bmpfname db 'violet.bmp',0       ; 图片路径  
-    backGround db 'bg.bmp',0
-    xp DB 'xpbg.bmp',0
+    ED db 'ed.bmp',0
     OP DB 'op.bmp',0
     x0 dw 0  	                ; 当前显示界面的横坐标，初始为0
     y0 dw 0            	        ; 当前显示界面的纵坐标，初始为0
@@ -53,41 +51,41 @@ DATA SEGMENT
     secUpdate db 0
     timerStart_Flag db 0
     timerStop_Flag db 0
-    ;--------------------绘制图形所需变量--------------------
+    ;--------------------绘制星星所需变量--------------------
     gameMode db 0
-    starX DW 160
-    starY DW 150
+    starX DW 0
+    starY DW 20
     rec1X DW 118
     rec1Y DW 175
     temp1 DW 0
     temp2 DW 0
-    ball db 0,0,0,1,1,1,1,0,0,0
-         db 0,1,1,1,1,1,1,1,1,0 
-         db 0,1,1,1,1,1,1,1,1,0 
-         db 1,1,1,1,1,1,1,1,1,1 
-         db 1,1,1,1,1,1,1,1,1,1 
-         db 1,1,1,1,1,1,1,1,1,1 
+    star db 0,0,0,0,1,1,0,0,0,0
+         db 0,0,0,0,1,1,0,0,0,0 
+         db 0,0,0,1,1,1,1,0,0,0 
+         db 0,0,0,1,1,1,1,0,0,0 
          db 1,1,1,1,1,1,1,1,1,1 
          db 0,1,1,1,1,1,1,1,1,0 
-         db 0,1,1,1,1,1,1,1,1,0 
-         db 0,0,0,1,1,1,1,0,0,0
+         db 0,0,1,1,1,1,1,1,0,0 
+         db 0,0,1,1,0,0,1,1,0,0 
+         db 0,1,1,0,0,0,0,1,1,0 
+         db 0,1,0,0,0,0,0,0,1,0
     ;--------------------播放音乐所需变量-------------------- 
-    ;频率表
-    musFreq dw 196,220,262,294,330,370,391,440,494,-1
-    ;节拍表
-    musTime dw 40,20,20,70,30,100
     mayDAY_musFreq dw -1
-    playing DB "Playing...",'$'
-    musicInfo DB "献给薇尔莉特",'$'            ;标题
-    jayChou DB "Jay Chou",'$'
+    opplaying DB "Sincerely",'$'
+    opmusicInfo DB "For Violet Evergarden",'$'            ;标题
     sincerelyFreq DW 196,330,294,330,1,370,330,294,1,196,330,294,330,1,294,330,370,370,1;6323,4322,6323,2344
                  DW 196,294,330,370,1,294,294,1,196,294,196,294,330,370,1;62343,22,626234
                  DW 196,330,294,330,1,370,330,294,1,196,330,294,330,1,440,330,294,294,1;6323,4322,6323,6322
                  DW 196,294,330,370,391,440,1,370,330,294,-1;623456,432
 
-    sincerelyTime DW 40, 30, 50, 2,20, 2, 20,4 ,30,5,50, 2,20, 2,20, 2,20, 2, 20, 20, 20, 20,5
-                 DW 40, 20, 20, 2,20, 4, 40,2, 25,2,25, 2,20, 2, 20, 20, 20, 20,5
-                 DW 40, 15, 2, 30,2, 25,2,25, 2,35, 2,35, 2, 35,20, 2,35, 2,100
+    sincerelyTime DW 10,20,10,10,2,10,10,20,20,2,10,20,10,10,2,10,20,20,20
+                 DW 10,20,20,20,20,4,10,10,2,10,20,10,30,20,20
+                 DW 10,20,10,10,2,10,10,20,20,2,10,20,10,10,2,10,20,20,20
+                 DW 20,10,10,30,20,30,2,20,20,20
+        edplaying DB "mijixirodei",'$'
+        edmusicInfo DB "What I wish is your happiness",'$'
+        edFreq DW -1
+        edTime DW -1
 DATA ENDS
 
 STACK SEGMENT STACK 'STACK'
@@ -122,332 +120,8 @@ SHOW_COLOR_CHAR MACRO CHAR,CHX,CHY,COLOR,TIMES
         MOV BL,COLOR
         INT 10H
         ENDM
-;-----------画横线------------------
-DRAW_HLINE MACRO X0,X1,Y,COLOR
-        LOCAL pheng
-        PUSH CX
-        PUSH DX
-        PUSH BX
-        PUSH AX
-        mov cx,X0                       ;x坐标
-        mov bx,X1                       ;终止x坐标
-        mov dx,Y                        ;y坐标
-        mov al,COLOR                    ;设置颜色
-        pheng:
-        mov ah,0ch                      ;写入点像
-        inc cx
-        cmp cx,bx
-        int 10h
-        jne pheng
-        POP AX
-        POP BX
-        POP DX
-        POP CX
-        ENDM
-;-----------画粗横线----------------
-DRAW_HLINE_THICK MACRO X0,X1,Y,COLOR,THICK
-        LOCAL THICK_LOOP
-        PUSH AX
-        PUSH CX
-        MOV AX,Y
-        MOV CX,THICK
-        THICK_LOOP:
-        DRAW_HLINE X0,X1,AX,COLOR
-        INC AX
-        LOOP THICK_LOOP
-        POP CX
-        POP AX
-        ENDM
-;-----------画竖线------------------
-DRAW_VLINE MACRO X,Y0,Y1,COLOR
-        LOCAL PSHU
-        PUSH CX
-        PUSH DX
-        PUSH AX
-        PUSH BX
-        mov cx,X                        ;X坐标
-        mov dx,Y0                       ;y坐标
-        mov bx,Y1                       ;终止y坐标
-        mov al,COLOR                    ;设置颜色
-        PSHU:
-        mov ah,0ch              ;写入点像
-        inc dx
-        cmp dx,bx
-        int 10h
-        jne pshu
-        POP BX
-        POP AX 
-        POP DX
-        POP CX
-        ENDM
-;-----------画斜线------------------
-DRAW_SLANT_LINE MACRO X1,Y1,X2,Y2,COLOR
-        LOCAL EXIT
-        LOCAL LINEZHENG,LINEFUN
-        LOCAL LINEZHENGZHENG,LINEZHENGFUN
-        LOCAL LINEFUNZHENG,LINEFUNFUN
-        LOCAL LINE1,LINE2,LINE3
-        LOCAL LINE11,LINE12,LINE13
-        LOCAL LINE21,LINE22,LINE23
-        LOCAL LINE31,LINE32,LINE33
-        PUSH AX
-        PUSH BX
-        PUSH CX
-        PUSH DX
-        PUSH SI
-        PUSH DI
-        MOV SI,0
-        MOV DI,0
-        MOV AX,X1
-        MOV BX,X2
-        MOV CX,Y1
-        MOV DX,Y2
-        CMP AX,BX
-        JA LINEFUN
-        LINEZHENG:
-        CMP CX,DX
-        JA  LINEZHENGFUN
-        LINEZHENGZHENG:
-        MOV AH,0CH
-        MOV AL,COLOR
-        MOV BH,0
-        MOV CX,X1
-        MOV DX,Y1
-        LINE1:ADD SI,(Y2-Y1)
-        CMP SI,(X2-X1)
-        JBE LINE2
-        SUB SI,(X2-X1)
-        INC DX
-        LINE2:ADD DI,(X2-X1)
-        CMP DI,(Y2-Y1)
-        JBE LINE3
-        SUB DI,(Y2-Y1)
-        INC CX
-        LINE3:INT 10H
-        CMP CX,X2
-        JB LINE1
-        LEA BX,EXIT
-        JMP BX
-        LINEZHENGFUN:
-        MOV AH,0CH
-        MOV AL,COLOR
-        MOV BH,0
-        MOV CX,X1
-        MOV DX,Y1
-        LINE11:ADD SI,(Y1-Y2)
-        CMP SI,(X2-X1)
-        JBE LINE12
-        SUB SI,(X2-X1)
-        DEC DX
-        LINE12:ADD DI,(X2-X1)
-        CMP DI,(Y1-Y2)
-        JBE LINE13
-        SUB DI,(Y1-Y2)
-        INC CX
-        LINE13:INT 10H
-        CMP CX,X2
-        JB LINE11
-        LEA BX,EXIT
-        JMP BX
-        LINEFUN:
-        MOV CX,Y1
-        MOV DX,Y2
-        CMP CX,DX
-        JA LINEFUNFUN
-        LINEFUNZHENG:
-        MOV AH,0CH
-        MOV AL,COLOR
-        MOV BH,0
-        MOV CX,X1
-        MOV DX,Y1
-        LINE21:
-        ADD SI,(Y2-Y1)
-        CMP SI,(X1-X2)
-        JBE LINE22
-        SUB SI,(X1-X2)
-        INC DX
-        LINE22:ADD DI,(X1-X2)
-        CMP DI,(Y2-Y1)
-        JBE LINE23
-        SUB DI,(Y2-Y1)
-        DEC CX
-        LINE23:INT 10H
-        CMP CX,X2
-        JA LINE21
-        JMP EXIT
-        LINEFUNFUN:
-        MOV CX,X1
-        MOV DX,Y1
-        MOV AH,0CH
-        MOV AL,COLOR
-        MOV BH,0
-        LINE31:ADD SI,(Y1-Y2)
-        CMP SI,(X1-X2)
-        JBE LINE32
-        SUB SI,(X1-X2)
-        DEC DX
-        LINE32:ADD DI,(X1-X2)
-        CMP DI,(Y1-Y2)
-        JBE LINE33
-        SUB DI,(Y1-Y2)
-        DEC CX
-        LINE33:INT 10H
-        CMP CX,X2
-        JA LINE31
-        EXIT:
-                POP DI
-                POP SI
-                POP DX
-                POP CX
-                POP BX
-                POP AX
-        ENDM
-;-----------画粗斜线----------------
-DRAW_SLANT_LINE_THICK MACRO X1,Y1,X2,Y2,COLOR,THICK
-        LOCAL SLANT_THICK
-        PUSH AX
-        PUSH CX
-        PUSH BX
-        MOV AX,X1
-        MOV temp1,AX
-        MOV BX,X2
-        MOV temp2,BX
-        MOV CX,THICK
-        SLANT_THICK:
-        DRAW_SLANT_LINE temp1,Y1,temp2,Y2,COLOR
-        DEC temp1
-        DEC temp2
-        DEC CX
-        JNZ SLANT_THICK
-        POP BX
-        POP CX
-        POP AX
-        ENDM
-;-----------画圆--------------------
-DRAW_CIRCLE MACRO XC,YC,RADIUS,COLOR
-        LOCAL NEXT1,NEXT2,NEXT3,NEXT4,NEXT5,NEXT6,EXIT
-        PUSH AX
-        PUSH BX
-        PUSH CX
-        PUSH DX
-        PUSH SI
-        PUSH DI
-        PUSH BP
-        MOV AH,0CH
-        MOV AL,COLOR
-        MOV BH,0
-        MOV CX,XC
-        MOV DX,YC
-        MOV SI,0         ;X
-        MOV DI,RADIUS    ;Y
-        MOV BP,1-RADIUS
-        NEXT1: CMP SI,DI
-        JL NEXT2
-        LEA BX,EXIT
-        JMP BX
-        NEXT2: INC SI
-        NEXT3: CMP BP,0
-        JGE NEXT4
-        ADD BP,SI
-        ADD BP,SI
-        ADD BP,1
-        JMP NEXT5
-        NEXT4: DEC DI
-        ADD BP,SI
-        ADD BP,SI
-        SUB BP,DI
-        SUB BP,DI
-        ADD BP,1
-        NEXT5: MOV BH,0
-        MOV CX,XC
-        MOV DX,YC
-        ADD CX,SI
-        ADD DX,DI
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC
-        SUB CX,SI
-        ADD DX,DI
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC
-        ADD CX,SI
-        SUB DX,DI
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC
-        SUB CX,SI
-        SUB DX,DI
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC
-        ADD CX,DI
-        ADD DX,SI
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC
-        SUB CX,DI
-        ADD DX,SI
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC
-        ADD CX,DI
-        SUB DX,SI
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC
-        SUB CX,DI
-        SUB DX,SI
-        INT 10H
-        NEXT6: LEA BX,NEXT1
-        JMP BX
-        EXIT:
-        MOV AH,0CH
-        MOV AL,COLOR
-        MOV BH,0
-        MOV CX,XC-RADIUS
-        MOV DX,YC
-        INT 10H
-        MOV CX,XC+RADIUS
-        MOV DX,YC
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC-RADIUS
-        INT 10H
-        MOV CX,XC
-        MOV DX,YC+RADIUS
-        INT 10H
-        POP BP
-        POP DI
-        POP SI
-        POP DX
-        POP CX
-        POP BX
-        POP AX
-        ENDM
-;-----------画实心矩形---------------
-DRAW_RECRANGLE MACRO X0,Y0,X1,Y1,COLOR
-        LOCAL FILL_SQUARE
-        PUSH CX
-        PUSH AX
-        PUSH BX
-        PUSH DX
-        XOR CX,CX
-        XOR AX,AX
-        MOV AX,X1
-        mov CX,(X1-X0)                      ;X坐标
-        MOV BX,X0
-        FILL_SQUARE:   
-        DRAW_VLINE BX,Y0,Y1,COLOR
-        ADD BX,1
-        LOOP FILL_SQUARE
-        POP DX
-        POP BX
-        POP AX
-        POP CX
-        ENDM
-;-----------画球--------------------     
-DRAW_BALL MACRO X,Y,COLOR
+;-----------画星星--------------------     
+DRAW_STAR MACRO X,Y,COLOR
         LOCAL ROWS,COLS,NEXT,setballcolor,setballexit
         mov bh,00                       ;显示页号为0 
         mov ah,0ch                      ;写像素，AL=颜色，BH=页码 CX=x，DX=y  
@@ -465,17 +139,17 @@ DRAW_BALL MACRO X,Y,COLOR
                 add cx,1 
                 add si,1 
                 mov al,color 
-                cmp ball[si],00 
-                jne setballcolor        ;是否为黑点 
+                cmp star[si],00 
+                jne setstarcolor        ;是否为黑点 
                 mov al,00 
-        setballcolor: 
+        setstarcolor: 
                 int 10h 
         
                 cmp bl,10 
                 jb COLS                 ;当一行中的10个点画完后，进入外循环  
                 cmp si,99 
                 jb ROWS                 ;当100个点全部画完后，跳出      
-        setballexit: 
+        setstarexit: 
         ENDM 
 ;-----------播放音乐辅助宏------------  
 MUS_ADDRESS MACRO A,B
@@ -504,13 +178,16 @@ BEGIN:
         CALL READ_PHOTO
         CALL SET_COLOR 
         CALL SHOW_IMG  
-        MUS_ADDRESS musFreq, musTime    ;播放OP
+        SHOW_COLOR_CHAR 0EH,10,15,0B7H,1
+        SHOW_STR opplaying,10,16
+        SHOW_COLOR_CHAR 0EH,10,26,0B7H,1
+        SHOW_STR opmusicInfo,12,10
+        MUS_ADDRESS sincerelyFreq, sincerelyTime    ;播放OP
         CALL music                
 
         CALL CLR_TIMER_STR
         CALL CLR_SRC
         LEA DX,bmpfname
-        ; LEA DX,xp
         CALL OPEN_PHOTO                 ;从硬盘读取图片 
         CALL READ_PHOTO
         CALL SET_COLOR 
@@ -522,8 +199,8 @@ MAIN_LOOP:
         INT 16H     
         JNZ SCAN_BUTTON                 ;判断输入
 
-        CMP gameMode,1                  ;画加载条
-        JE gameLoop
+        ;CMP gameMode,1                  ;画加载条
+        ;JE gameLoop
         SHOW_STR CLK_NAME,9,14
         SHOW_COLOR_CHAR 1AH,9,17,7FH,1  
         SHOW_STR TIME,9,18              ;显示时钟
@@ -544,36 +221,11 @@ MAIN_LOOP:
                 CALL UPDATE_TIMER_STR
                 JMP MAIN_LOOP
         SEC_PASSED:      
-                MOV AL,timerStop_Flag
-                CMP AL,1
-                JE CHANGE_COLOR_STEP
+                
                 STAR_FALL:
-                        ADD starY,2
-                        DRAW_CIRCLE 160,starY,1,27H
-                CHANGE_COLOR_STEP:      ;改变颜色
-                        INC colorIndex
-                        CMP colorIndex,0FEH
-                        JBE CHANGE_COLOR
-                RESET_COLOR_INDEX:
-                        MOV colorIndex,0F8H
-                CHANGE_COLOR:
-                        SHOW_COLOR_CHAR '-',1,8,colorIndex,24
-                        SHOW_COLOR_CHAR '-',7,8,colorIndex,24
+                        CALL DRAW_STARS
                 MOV secUpdate,0         ;时间复位
                 CALL GET_TIME_FROM_CLK
-                JMP MAIN_LOOP
-        gameLoop:                       ;加载条
-                ; CALL SHOW_IMG
-                MOV AL,fre1000
-                CMP AL,1
-                JE UPDATE_GRAPH
-                JMP MAIN_LOOP
-                UPDATE_GRAPH:           ;更新画面1000hz
-                        SHOW_COLOR_CHAR 0EH,10,15,0B7H,1
-                        SHOW_STR playing,10,16
-                        SHOW_COLOR_CHAR 0EH,10,26,0B7H,1
-                        SHOW_STR musInfo,12,10          ;标题
-
                 JMP MAIN_LOOP
         SCAN_BUTTON:
                 MOV AH,00H
@@ -590,8 +242,8 @@ MAIN_LOOP:
                 JE PRESS_S
                 CMP AL,'r'
                 JE PRESS_R
-                CMP AL,'x'
-                JE PRESS_X
+                CMP AL,'e'
+                JE PRESS_E
                 CMP AX,4b00h            ;左方向键
                 JE PRESS_LEFT
                 CMP AX,4D00H            ;右方向键
@@ -638,8 +290,7 @@ MAIN_LOOP:
                 PRESS_T:
                         JMP MAIN_LOOP
                 PRESS_C:
-                        CALL DRAW_star_GLASS
-                        CALL DRAW_star
+                        CALL DRAW_STARS
                         MOV timerStart_Flag,1
                         MOV timerStop_Flag,0
                         CALL TIMER_INIT          ;定时器初始化
@@ -653,23 +304,23 @@ MAIN_LOOP:
                         CALL CLR_TIMER
                         CALL SHOW_IMG
                         CALL SHOW_TIPS
-                        CALL DRAW_star_GLASS
-                        CALL DRAW_star
+                        CALL DRAW_STARS
                         MOV starY,150
                         SHOW_STR TIMER_NAME,11,12
                         SHOW_COLOR_CHAR 1AH,11,17,27H,1
                         SHOW_STR timerStr,11,18 
                         JMP MAIN_LOOP
-                PRESS_X:
-                        LEA DX,backGround
+                PRESS_E:
+                        LEA DX,ED
+                        CALL CLR_SRC
                         CALL OPEN_PHOTO
                         CALL READ_PHOTO
                         CALL SHOW_IMG
                         SHOW_COLOR_CHAR 0EH,10,15,0B7H,1
-                        SHOW_STR playing,10,16
+                        SHOW_STR edplaying,10,16
                         SHOW_COLOR_CHAR 0EH,10,26,0B7H,1
-                        SHOW_STR musInfo,12,10
-                        MUS_ADDRESS sincerelyFreq, sincerelyTime    ;播放sincerely
+                        SHOW_STR edmusicInfo,12,10
+                        MUS_ADDRESS edFreq, edTime    ;播放sincerely
                         CALL music
                         MOV gameMode,1
                         JMP MAIN_LOOP
@@ -718,17 +369,16 @@ CLR_SRC ENDP
 SHOW_TIPS PROC        
         PUSH AX
         PUSH DX
-        SHOW_COLOR_CHAR '-',1,8,09H,24
-        ; SHOW_STR EQUAL_STR,0,8
-        ; SHOW_STR TIPS1,2,8
-        SHOW_STR TIPS2,2,8
-        SHOW_STR TIPS3,3,8
-        SHOW_STR TIPS4,4,8
-        SHOW_STR TIPS5,5,8
-        SHOW_STR TIPS6,6,8
-        SHOW_COLOR_CHAR '-',7,8,0EFH,24
-        ; SHOW_STR EQUAL_STR,7,8
-        SHOW_STR authorInfo,49,0
+        SHOW_STR MENU_TIP,39,8
+        SHOW_COLOR_CHAR '~',40,8,0DH,24
+        SHOW_STR TIPS1,41,8
+        SHOW_STR TIPS2,42,8
+        SHOW_STR TIPS3,43,8
+        SHOW_STR TIPS4,44,8
+        SHOW_STR TIPS5,45,8
+        SHOW_STR TIPS6,46,8
+        SHOW_COLOR_CHAR '~',47,8,0DH,24
+        SHOW_STR Info,49,8
         POP DX
         POP AX
         RET
@@ -1304,34 +954,23 @@ DISP_CHAR PROC
         RET
 DISP_CHAR ENDP
 
-; -----------DRAW_star-----------
-; 子程序名：DRAW_star
-; 功能: 画沙漏里的沙子
-DRAW_star PROC
-         ADD starY,2
-        DRAW_CIRCLE 160,starY,1,27H
-        INC colorIndex          ;CHANGE_COLOR_STEP:
-        CMP colorIndex,0FEH
-        JBE CHANGE_COLOR
-        MOV colorIndex,0F8H     ;RESET_COLOR_INDEX:
-        SHOW_COLOR_CHAR '-',1,8,colorIndex,24
-        SHOW_COLOR_CHAR '-',7,8,colorIndex,24
+; -----------DRAW_STARS-----------
+; 子程序名：DRAW_STARS
+; 功能: 画星星
+DRAW_STARS PROC
+         ADD starY,20
+         CMP starY,190
+         JL OKy
+         MOV starY,0
+         ADD starX,20
+        OKy:
+        CMP starX,310
+        JL OKx
+        MOV starX,0
+        OKx:
+        DRAW_STAR starX,starY,27H
         RET
-DRAW_star ENDP
-
-; -----------DRAW_star_GLASS-----------
-; 子程序名：DRAW_star_GLASS
-; 功能: 画沙漏
-DRAW_star_GLASS PROC
-        DRAW_HLINE_THICK 130,190,125,0D8H,2
-        DRAW_SLANT_LINE 130,125,157,155,0D8H
-        DRAW_SLANT_LINE 163,156,190,125,0D8H
-        DRAW_SLANT_LINE 157,155,130,183,0D8H
-        DRAW_SLANT_LINE 163,155,190,183,0D8H
-        DRAW_HLINE_THICK 130,190,183,0D8H,2
-        CALL DRAW_star
-        RET
-DRAW_star_GLASS ENDP
+DRAW_STARS ENDP
 
 ; -----------WAITF-----------
 ; 子程序名：WAITF
@@ -1400,15 +1039,6 @@ wait1:
     mov cx, 3314
     call waitf
     push cx             ;保护
-    DRAW_LODING:
-        MOV cl,gameMode ;进入音乐模式则不画加载条
-        CMP cl,1
-        JE delay1
-        DRAW_RECRANGLE rec1X,rec1Y,rec1X+2,180,27H  ;画加载条
-        MOV AX,rec1X
-        CMP AX,195
-        JAE delay1
-        ADD rec1X,3
 delay1:
     pop cx
     dec bx
