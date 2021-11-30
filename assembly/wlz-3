@@ -1,75 +1,6 @@
 
 DATA SEGMENT
-    ;--------------------显示菜单--------------------
-    MENU_TIP DB "Press an alphabet to select a function",'$'
-    TIPS1 DB     18H," Date:D          ",18H,'$'
-    TIPS2 DB     18H," Time:T          ",18H,'$'
-    TIPS3 DB     7CH," Start The Timer:C    ",7CH,'$'
-    TIPS4 DB     7CH," Stop The Timer:S     ",7CH,'$'
-    TIPS5 DB     7CH," Restart The Timer:R  ",7CH,'$'
-    TIPS6 DB     7CH," Play The ED:E        ",7CH,'$'    
-    TIPS7 DB     19H," Quit This Program:Q  ",19H,'$'
-    LINE_BREAK DB 0AH,0DH,'$'
-    Info DB "Never know what love means.",'$'
-    colorIndex DB 0F8H
-    colorHigh DB 00H
-    colorLow DB 09H
-    BUFFER DB 100 DUP(0)        ;通用缓冲区
-    ;--------------------显示日期时间所需变量--------------------
-    DATE DB "DATE",1AH,"0000/00/00|000",'$','$'
-    WEEK DB "MON","TUS","WED","THS","FRI","SAT","SUN" ;星期预定义
-    TIME DB "00:00:00",'$','$'
-    DATE_X DB 11                ;图形模式下x坐标范围0~49,y坐标范围0~39 
-    DATE_Y DB 13
-    TIME_X DB 0
-    TIME_Y DB 0
-    CLK_NAME DB "CLK",'$'
-    TIMER_NAME DB "TIMER",'$'
-    showDate_Flag DB 0
-    ;--------------------显示图片所需变量--------------------
-    bmpfname db 'violet.bmp',0       ; 图片路径  
-    ED db 'ed.bmp',0
-    OP DB 'op.bmp',0
-    x0 dw 0  	                ; 当前显示界面的横坐标，初始为0
-    y0 dw 0            	        ; 当前显示界面的纵坐标，初始为0
-    handle dw 0                 ; 文件指针  
-    bmpdata1 db 256*4 dup(0)    ; 存放位图文件调色板  
-    bmpdata2 db 61000 dup(0)    ; 存放位图信息,64k  
-    bmpwidth dw 0               ; 位图宽度  
-    bmplength dw 0              ; 位图长度 
-    ;--------------------8253中断定时器所需变量--------------------
-    count100 DB 0               ; 分频系数
-    fre100 DB 0                 ; 100hz
-    fre1000 DB 0                ; 1000hz
-    tenHour db '0'              ; 小时的十位
-    hour db '0',':'
-    tenMin db '0'
-    minute db '0',':'
-    tenSec db '0'
-    second db '0'
-    timerStr db "00:00:00:0",'$'
-    secUpdate db 0
-    timerStart_Flag db 0
-    timerStop_Flag db 0
-    ;--------------------绘制星星所需变量--------------------
-    gameMode db 0
-    starX DW 0
-    starY DW 20
-    rec1X DW 118
-    rec1Y DW 175
-    temp1 DW 0
-    temp2 DW 0
-    star db 0,0,0,0,1,1,0,0,0,0
-         db 0,0,0,0,1,1,0,0,0,0 
-         db 0,0,0,1,1,1,1,0,0,0 
-         db 0,0,0,1,1,1,1,0,0,0 
-         db 1,1,1,1,1,1,1,1,1,1 
-         db 0,1,1,1,1,1,1,1,1,0 
-         db 0,0,1,1,1,1,1,1,0,0 
-         db 0,0,1,1,0,0,1,1,0,0 
-         db 0,1,1,0,0,0,0,1,1,0 
-         db 0,1,0,0,0,0,0,0,1,0
-    ;--------------------播放音乐所需变量-------------------- 
+;播放音乐所需变量 
     mayDAY_musFreq dw -1
     opplaying DB "Sincerely",'$'
     opmusicInfo DB "For Violet Evergarden",'$'            ;标题
@@ -86,6 +17,77 @@ DATA SEGMENT
         edmusicInfo DB "What I wish is your happiness",'$'
         edFreq DW -1
         edTime DW -1
+        ;绘制星星所需变量
+    starX DW 0
+    starY DW 20
+    rec1X DW 118
+    rec1Y DW 175
+    temp1 DW 0
+    temp2 DW 0
+    star db 0,0,0,0,1,1,0,0,0,0
+         db 0,0,0,0,1,1,0,0,0,0 
+         db 0,0,0,1,1,1,1,0,0,0 
+         db 0,0,0,1,1,1,1,0,0,0 
+         db 1,1,1,1,1,1,1,1,1,1 
+         db 0,1,1,1,1,1,1,1,1,0 
+         db 0,0,1,1,1,1,1,1,0,0 
+         db 0,0,1,1,0,0,1,1,0,0 
+         db 0,1,1,0,0,0,0,1,1,0 
+         db 0,1,0,0,0,0,0,0,1,0
+         ;显示图片所需变量
+    bmpfname db 'violet.bmp',0       ; 图片路径  
+    ED db 'ed.bmp',0
+    OP DB 'op.bmp',0
+    x0 dw 0  	                ; 当前显示界面的横坐标，初始为0
+    y0 dw 0            	        ; 当前显示界面的纵坐标，初始为0
+    handle dw 0                 ; 文件指针  
+    bmpdata1 db 256*4 dup(0)    ; 存放位图文件调色板  
+    bmpdata2 db 61000 dup(0)    ; 存放位图信息,64k  
+    bmpwidth dw 0               ; 位图宽度  
+    bmplength dw 0              ; 位图长度 
+    ;显示菜单
+    MENU_TIP DB "Press an alphabet to select a function",'$'
+    TIPS1 DB     7CH," Date:D             ",7CH,'$'
+    TIPS2 DB     7CH," Time:T             ",7CH,'$'
+    TIPS3 DB     7CH," Start The Timer:C  ",7CH,'$'
+    TIPS4 DB     7CH," Stop The Timer:S   ",7CH,'$'
+    TIPS5 DB     7CH," Restart The Timer:R",7CH,'$'
+    TIPS6 DB     7CH," Play The ED:E      ",7CH,'$'    
+    TIPS7 DB     7CH," Quit This Program:Q",7CH,'$'
+    LINE_BREAK DB 0AH,0DH,'$'
+    Info DB "Never know what love means.",'$'
+    colorIndex DB 0F8H
+    colorHigh DB 00H
+    colorLow DB 09H
+    BUFFER DB 100 DUP(0)        ;通用缓冲区
+    ;显示日期时间所需变量
+    DATE DB "DATE",1AH,"0000/00/00|000",'$','$'
+    WEEK DB "MON","TUS","WED","THS","FRI","SAT","SUN" ;星期
+    TIME DB "00:00:00",'$','$'
+    DATE_X DB 4                ;图形模式下x坐标范围0~49,y坐标范围0~39 
+    DATE_Y DB 2
+    TIME_X DB 2
+    TIME_Y DB 2
+    CLK_NAME DB "CLK",'$'
+    TIMER_NAME DB "TIMER",'$'
+    showDate_Flag DB 0
+    
+    ;8253中断定时器所需变量
+    count100 DB 0               ; 分频系数
+    fre100 DB 0                 ; 100hz
+    fre1000 DB 0                ; 1000hz
+    tenHour db '0'              ; 小时的十位
+    hour db '0',':'
+    tenMin db '0'
+    minute db '0',':'
+    tenSec db '0'
+    second db '0'
+    timerStr db "00:00:00:0",'$'
+    secUpdate db 0
+    timerStart_Flag db 0
+    timerStop_Flag db 0
+    
+    
 DATA ENDS
 
 STACK SEGMENT STACK 'STACK'
@@ -94,33 +96,8 @@ STACK ENDS
 
 CODE SEGMENT 'CODE'
     ASSUME DS:DATA,SS:STACK,CS:CODE
-;=====================宏定义=======================
-;-----------设置光标位置-------------
-SET_SHOW_POS MACRO POS_X,POS_Y
-        MOV BH,0       ;页码
-        mov DH,POS_X   ;行
-        mov DL,POS_Y   ;列
-        mov ah,02H      
-        int 10h
-        ENDM
-
-;-----------显示字符串---------------
-SHOW_STR MACRO STRING_NAME,STR_X,STR_Y
-        SET_SHOW_POS STR_X,STR_Y
-        LEA DX,STRING_NAME
-        MOV AH,09H
-        INT 21h
-        ENDM
-;-----------显示彩色字符-------------
-SHOW_COLOR_CHAR MACRO CHAR,CHX,CHY,COLOR,TIMES
-        SET_SHOW_POS CHX,CHY
-        MOV CX,TIMES
-        MOV AH,09H
-        MOV AL,CHAR
-        MOV BL,COLOR
-        INT 10H
-        ENDM
-;-----------画星星--------------------     
+;宏定义
+;画星星     
 DRAW_STAR MACRO X,Y,COLOR
         LOCAL ROWS,COLS,NEXT,setballcolor,setballexit
         mov bh,00                       ;显示页号为0 
@@ -151,13 +128,39 @@ DRAW_STAR MACRO X,Y,COLOR
                 jb ROWS                 ;当100个点全部画完后，跳出      
         setstarexit: 
         ENDM 
-;-----------播放音乐辅助宏------------  
+;播放音乐辅助宏  
 MUS_ADDRESS MACRO A,B
     LEA SI,A
     LEA BP,DS:B
     ENDM
-;---------------------------------- 
-;=====================宏定义END=======================
+;设置光标位置
+SET_SHOW_POS MACRO POS_X,POS_Y
+        MOV BH,0       ;页码
+        mov DH,POS_X   ;行
+        mov DL,POS_Y   ;列
+        mov ah,02H      
+        int 10h
+        ENDM
+
+;显示字符串
+SHOW_STR MACRO STRING_NAME,STR_X,STR_Y
+        SET_SHOW_POS STR_X,STR_Y
+        LEA DX,STRING_NAME
+        MOV AH,09H
+        INT 21h
+        ENDM
+;显示彩色字符
+SHOW_COLOR_CHAR MACRO CHAR,CHX,CHY,COLOR,TIMES
+        SET_SHOW_POS CHX,CHY
+        MOV CX,TIMES
+        MOV AH,09H
+        MOV AL,CHAR
+        MOV BL,COLOR
+        INT 10H
+        ENDM
+
+
+;宏定义END
 
 
 
@@ -169,12 +172,10 @@ START:
         MOV DS,AX
         MOV ES,AX
 
-;===============================================================================================
-;                                         >>>主过程<<<                                          |
-;===============================================================================================
+;主过程                            
 BEGIN:         
         LEA DX,OP
-        CALL OPEN_PHOTO                 ;读取第一张图片 
+        CALL OPEN_PHOTO                 ;读取op图片 
         CALL READ_PHOTO
         CALL SET_COLOR 
         CALL SHOW_IMG  
@@ -188,28 +189,22 @@ BEGIN:
         CALL CLR_TIMER_STR
         CALL CLR_SRC
         LEA DX,bmpfname
-        CALL OPEN_PHOTO                 ;从硬盘读取图片 
+        CALL OPEN_PHOTO                 ;读取主界面图片 
         CALL READ_PHOTO
         CALL SET_COLOR 
         CALL SHOW_IMG                   ;显示图片
         CALL SHOW_TIPS                  ;显示提示信息
-;------------------主循环------------------
+;主循环
 MAIN_LOOP:         
         MOV AH,01H                      ;键盘输入,不等待
         INT 16H     
         JNZ SCAN_BUTTON                 ;判断输入
-
-        ;CMP gameMode,1                  ;画加载条
-        ;JE gameLoop
-        SHOW_STR CLK_NAME,9,14
-        SHOW_COLOR_CHAR 1AH,9,17,7FH,1  
-        SHOW_STR TIME,9,18              ;显示时钟
+        
 
         CMP timerStop_Flag,1
         JE NEXT1
-        SHOW_STR TIMER_NAME,11,12
-        SHOW_COLOR_CHAR 1AH,11,17,27H,1
-        SHOW_STR timerStr,11,18         ;显示计时器
+        SHOW_STR TIMER_NAME,3,2
+        SHOW_STR timerStr,4,2         ;显示计时器
 
         NEXT1:
                 CMP secUpdate,1                 ;8253的秒位发生变化
@@ -223,7 +218,7 @@ MAIN_LOOP:
         SEC_PASSED:      
                 
                 STAR_FALL:
-                        CALL DRAW_STARS
+                CALL DRAW_STARS
                 MOV secUpdate,0         ;时间复位
                 CALL GET_TIME_FROM_CLK
                 JMP MAIN_LOOP
@@ -256,10 +251,22 @@ MAIN_LOOP:
                 JMP MAIN_LOOP
 
                 PRESS_UP:
-                        ; CALL SHOW_IMG
+                        MOV AL,timerStart_Flag
+                        CMP AL,1
+                        JE EXIT_CHANGE_DATE_POS
+                        SUB DATE_Y,2
+                        CALL SHOW_IMG
+                        CALL SHOW_TIPS
+                        SHOW_STR DATE,DATE_Y,DATE_X
                         JMP MAIN_LOOP
                 PRESS_DOWN:
-                        ; CALL SHOW_IMG
+                        MOV AL,timerStart_Flag
+                        CMP AL,1
+                        JE EXIT_CHANGE_DATE_POS
+                        ADD DATE_Y,2
+                        CALL SHOW_IMG
+                        CALL SHOW_TIPS
+                        SHOW_STR DATE,DATE_Y,DATE_X
                         JMP MAIN_LOOP
                 PRESS_LEFT:  
                         ; INC colorIndex
@@ -280,7 +287,7 @@ MAIN_LOOP:
                         CALL SHOW_IMG
                         CALL SHOW_TIPS
                         SHOW_STR DATE,DATE_Y,DATE_X
-                        EXIT_CHANGE_DATE_POS:
+                EXIT_CHANGE_DATE_POS:
                         JMP MAIN_LOOP
                 PRESS_D:
                         CALL GET_DATE
@@ -288,6 +295,8 @@ MAIN_LOOP:
                         SHOW_STR DATE,DATE_Y,DATE_X
                         JMP MAIN_LOOP
                 PRESS_T:
+                        SHOW_STR CLK_NAME,1,2
+                        SHOW_STR TIME,2,2              ;显示时钟
                         JMP MAIN_LOOP
                 PRESS_C:
                         CALL DRAW_STARS
@@ -305,12 +314,14 @@ MAIN_LOOP:
                         CALL SHOW_IMG
                         CALL SHOW_TIPS
                         CALL DRAW_STARS
-                        MOV starY,150
-                        SHOW_STR TIMER_NAME,11,12
+                        MOV starY,1
+                        MOV starX,1
+                        SHOW_STR TIMER_NAME,1,2
                         SHOW_COLOR_CHAR 1AH,11,17,27H,1
-                        SHOW_STR timerStr,11,18 
+                        SHOW_STR timerStr,6,2
                         JMP MAIN_LOOP
                 PRESS_E:
+                        CALL CLR_SRC
                         LEA DX,ED
                         CALL CLR_SRC
                         CALL OPEN_PHOTO
@@ -320,13 +331,12 @@ MAIN_LOOP:
                         SHOW_STR edplaying,10,16
                         SHOW_COLOR_CHAR 0EH,10,26,0B7H,1
                         SHOW_STR edmusicInfo,12,10
-                        MUS_ADDRESS edFreq, edTime    ;播放sincerely
+                        MUS_ADDRESS edFreq, edTime    ;播放ed
                         CALL music
-                        MOV gameMode,1
                         JMP MAIN_LOOP
                 PRESS_Q:
                         JMP EXIT_MAIN
-;------------------主循环END------------------
+;主循环END
 EXIT_MAIN:
         ; MOV AH,0                        ;等待键盘输入后退出
         ; INT 16H
@@ -340,10 +350,8 @@ EXIT_MAIN:
 
 
 
-;===============================================================================================
-;                                     >>>子过程定义<<<                                          |
-;===============================================================================================
-; -----------CLR_SRC-----------
+;子过程定义
+; CLR_SRC
 ; 子程序名：CLR_SRC
 ; 功能：清屏
 CLR_SRC PROC
@@ -363,28 +371,29 @@ CLR_SRC PROC
         RET
 CLR_SRC ENDP
 
-; -----------SHOW_TIPS-----------
+; SHOW_TIPS
 ; 子程序名：SHOW_TIPS
 ; 功能：显示提示信息
 SHOW_TIPS PROC        
         PUSH AX
         PUSH DX
-        SHOW_STR MENU_TIP,39,8
-        SHOW_COLOR_CHAR '~',40,8,0DH,24
-        SHOW_STR TIPS1,41,8
-        SHOW_STR TIPS2,42,8
-        SHOW_STR TIPS3,43,8
-        SHOW_STR TIPS4,44,8
-        SHOW_STR TIPS5,45,8
-        SHOW_STR TIPS6,46,8
-        SHOW_COLOR_CHAR '~',47,8,0DH,24
-        SHOW_STR Info,49,8
+        SHOW_COLOR_CHAR '~',9,1,0DH,22
+        SHOW_STR MENU_TIP,10,1
+        SHOW_STR TIPS1,11,1
+        SHOW_STR TIPS2,12,1
+        SHOW_STR TIPS3,13,1
+        SHOW_STR TIPS4,14,1
+        SHOW_STR TIPS5,15,1
+        SHOW_STR TIPS6,16,1
+        SHOW_STR TIPS7,17,1
+        SHOW_COLOR_CHAR '~',18,1,0DH,22
+        SHOW_STR Info,20,1
         POP DX
         POP AX
         RET
 SHOW_TIPS ENDP
 
-; -----------GET_TIME-----------
+; GET_TIME
 ; 子程序名：GET_TIME
 ; 功能：获取时间，并填充TIME数组
 ; 所用寄存器：ch,cl,dh中分别存放时分秒
@@ -418,7 +427,7 @@ GET_TIME PROC
         RET
 GET_TIME ENDP
 
-; -----------GET_TIME_FROM_CLK-----------
+; GET_TIME_FROM_CLK
 ; 子程序名：GET_TIME_FROM_CLK
 ; 功能：从定时器继续当前时钟
 ; note:由于定时中断服务程序占用了中断向量表中08H的位置，导致
@@ -465,8 +474,7 @@ GET_TIME_FROM_CLK PROC FAR
         RET
 GET_TIME_FROM_CLK ENDP
 
-; -----------CLR_TIME-----------
-; 子程序名：CLR_TIME
+; CLR_TIME
 ; 功能：清空TIME数组
 CLR_TIME PROC FAR
         PUSH BX
@@ -483,7 +491,7 @@ CLR_TIME PROC FAR
         RET
 CLR_TIME ENDP
 
-; 子程序名：SHOW_TIME
+;SHOW_TIME
 ; 功能：显示日期
 ; 所用寄存器：
 ; 入口参数：
@@ -497,8 +505,7 @@ SHOW_TIME PROC
         POP DX
 SHOW_TIME ENDP
 
-; -----------GET_DATE-----------
-; 子程序名：get_date
+; GET_DATE
 ; 功能：获取日期，并填充给DATE数组
 ; 所用寄存器：CX,DH,DL,AL
 ; 入口参数：无
@@ -555,8 +562,7 @@ GET_DATE PROC
         RET
 GET_DATE ENDP
 
-; -----------SHOW_DATE-----------
-; 子程序名：SHOW_DATE
+; SHOW_DATE
 ; 功能：显示日期
 ; 所用寄存器：DX,AH
 ; 入口参数：
@@ -574,8 +580,7 @@ SHOW_DATE PROC
         RET
 SHOW_DATE ENDP
 
-; -----------NUM2ASC-----------
-; 子程序名：NUM2ASC
+; NUM2ASC
 ; 功能：将数字转为ASC2码形式
 ; 所用寄存器：BX,AX
 ; 入口参数：AX存待转换数字，BX存字符串末尾
@@ -595,8 +600,7 @@ NUM2ASC PROC
         RET
 NUM2ASC ENDP
 
-; -----------PRINT_LINE_BREAK-----------
-; 子程序名：PRINT_LINE_BREAK
+; PRINT_LINE_BREAK
 ; 功能：打印一个换行符
 PRINT_LINE_BREAK PROC
         PUSH DX
@@ -609,9 +613,8 @@ PRINT_LINE_BREAK PROC
         RET
 PRINT_LINE_BREAK ENDP
 
-; -----------OPEN_PHOTO-----------
-; 子程序名：OPEN_PHOTO
-; 功能: 打开图片文件
+; OPEN_PHOTO
+;  打开图片文件
 ; 入口参数：DX存图片路径名
 OPEN_PHOTO PROC NEAR  
 ;     LEA DX, bmpfname           
@@ -622,9 +625,8 @@ OPEN_PHOTO PROC NEAR
     RET  
 OPEN_PHOTO ENDP  
 
-; -----------READ_PHOTO-----------
-; 子程序名：READ_PHOTO
-; 功能: 读取图片文件，获取位图信息函数  
+; READ_PHOTO
+;  读取图片文件，获取位图信息函数  
 READ_PHOTO proc near  
         ; 移动文件指针,bx = 文件代号， cx:dx = 位移量， al = 0 即从文件头绝对位移  
         mov ah, 42h  
@@ -664,9 +666,8 @@ READ_PHOTO proc near
         ret  
 READ_PHOTO endp  
 
-; -----------SET_COLOR-----------
-; 子程序名：SET_COLOR
-; 功能: 设置调色板输出色彩索引号及rgb数据共写256次   
+; SET_COLOR
+;  设置调色板输出色彩索引号及rgb数据共写256次   
 SET_COLOR proc near  
         ;设置256色,320*200像素  640*480
         mov ax, 0013h  
@@ -703,9 +704,8 @@ SET_COLOR proc near
         ret  
 SET_COLOR endp  
 
-; -----------SHOW_IMG-----------
-; 子程序名：SHOW_IMG
-; 功能: 显示图片
+; SHOW_IMG
+;  显示图片
 SHOW_IMG proc near  
         mov bx, 0a000h          ; 写屏 
         mov es, bx  
@@ -769,9 +769,8 @@ exit:
         RET      
 SHOW_IMG endp 
 
-; -----------TIMER_INIT-----------
-; 子程序名：TIMER_INIT
-; 功能: 初始化8253中断定时器
+; TIMER_INIT
+;  初始化8253中断定时器
 TIMER_INIT PROC
         PUSH BX
         PUSH AX
@@ -798,9 +797,8 @@ TIMER_INIT PROC
         RET
 TIMER_INIT ENDP
 
-; -----------TIMER_ENABLE-----------
-; 子程序名：TIMER_ENABLE
-; 功能: 使能定时中断
+; TIMER_ENABLE
+;  使能定时中断
 TIMER_ENABLE PROC
         MOV AL,0FCH
         OUT 21H,AL      ;写中断掩码寄存器
@@ -808,9 +806,8 @@ TIMER_ENABLE PROC
         RET
 TIMER_ENABLE ENDP
 
-; -----------TIMER-----------
-; 子程序名：TIMER
-; 功能: 定时中断服务程序
+; TIMER
+;  定时中断服务程序
 TIMER PROC FAR
         PUSH AX
         PUSH BX
@@ -860,9 +857,8 @@ TIMERX:
         IRET                    ;中断返回
 TIMER ENDP
 
-; -----------UPDATE_TIMER-----------
-; 子程序名：UPDATE_TIMER
-; 功能: 更新计时器显示字符串
+; UPDATE_TIMER
+;  更新计时器显示字符串
 UPDATE_TIMER_STR PROC
         PUSH AX
         PUSH BX
@@ -923,9 +919,8 @@ CLR_TIMER PROC
         RET
 CLR_TIMER ENDP
 
-; -----------DISP_CLK-----------
-; 子程序名：DISP_CLK
-; 功能: 显示定时器时间
+; DISP_CLK
+;  显示定时器时间
 DISP_CLK PROC
         PUSH BX
         PUSH AX
@@ -941,9 +936,8 @@ DISP_LOOP:
         RET 
 DISP_CLK ENDP
 
-; -----------DISP_CHAR-----------
-; 子程序名：DISP_CHAR
-; 功能: 显示一个字符
+; DISP_CHAR
+;  显示一个字符
 ; 入口参数：AL存放待显示字符
 DISP_CHAR PROC
         PUSH BX
@@ -954,9 +948,8 @@ DISP_CHAR PROC
         RET
 DISP_CHAR ENDP
 
-; -----------DRAW_STARS-----------
-; 子程序名：DRAW_STARS
-; 功能: 画星星
+; DRAW_STARS
+;  画星星
 DRAW_STARS PROC
          ADD starY,20
          CMP starY,190
@@ -972,9 +965,8 @@ DRAW_STARS PROC
         RET
 DRAW_STARS ENDP
 
-; -----------WAITF-----------
-; 子程序名：WAITF
-; 功能: 简单的延时程序
+; WAITF
+;  简单的延时程序
 WAITF proc near
      push ax
 waitf1:
@@ -988,9 +980,8 @@ waitf1:
      ret
 WAITF endp
 
-; -----------music-----------
-; 子程序名：music
-; 功能: 播放音乐
+; music
+;  播放音乐
 music proc near
      xor ax, ax
 freg:
@@ -1006,9 +997,8 @@ end_mus:
      ret
 music endp
 
-; -----------GEN_SOUND-----------
-; 子程序名：GEN_SOUND
-; 功能: 发声
+; GEN_SOUND
+;  发声
 GEN_SOUND proc near
     push ax
     push bx
@@ -1055,6 +1045,6 @@ delay1:
 GEN_SOUND endp
 
 
-;====================子过程定义END============================
+;子过程定义END
 CODE ENDS
     END START
